@@ -1,0 +1,148 @@
+;Solucion Ejercicio 1: Resta de 3 números
+;Solucion Ejercicio 1: Resta de 3 números
+section .text
+global _start 
+
+_start: ; Punto de entrada
+    ; Cargar los números en registros de 16 bits
+    mov ax, 25  ; Cargar el número 25 en el registro AX
+    mov bx, 10  ; Cargar el número 10 en el registro BX
+    mov cx, 5   ; Cargar el número 5 en el registro CX
+
+    ; Mostrar el mensaje de encabezado
+    mov ecx, title_msg  ; Dirección del mensaje
+    mov edx, title_len  ; Longitud del mensaje
+    mov ebx, 1          ; Descriptor de archivo 
+    mov eax, 4          ; Número de llamada del sistema 
+    int 0x80            ; Llamada al kernel
+
+    ; Mostrar el primer número
+    mov ax, 25
+    call print_number
+
+    ; Mostrar el signo de resta
+    mov al, '-'         ; Imprimir el signo de resta
+    call print_char
+
+    ; Mostrar el segundo número
+    mov ax, 10
+    call print_number
+
+    ; Mostrar el signo de resta
+    mov al, '-'         ; Imprimir el signo de resta
+    call print_char
+
+    ; Mostrar el tercer número
+    mov ax, 5
+    call print_number
+
+    ; Mostrar un salto de línea
+    call print_newline
+
+    ; Realizar la resta
+    mov ax, 25  ; Cargar el número 25 en el registro AX
+    sub ax, 10  ; Restar BX de AX (AX = AX - BX)
+    sub ax, 5   ; Restar CX de AX (AX = AX - CX)
+    ; AX ahora contiene el resultado de la resta
+
+    ; Descomponer el resultado en decenas y unidades
+    mov bx, 10
+    xor dx, dx  ; Limpiar DX antes de la división
+    div bx      ; Dividir AX por 10, cociente en AX (decenas), residuo en DX (unidades)
+
+    ; Convertir el cociente (decenas) y el residuo (unidades) a ASCII
+    add ax, '0' ; Convertir el cociente (decenas) a ASCII
+    add dx, '0' ; Convertir el residuo (unidades) a ASCII
+
+    ; Guardar los resultados en variables
+    mov [res_tens], al ; Guardar las decenas
+    mov [res_units], dl ; Guardar las unidades
+
+    ; Mostrar el mensaje del resultado
+    mov ecx, result_msg ; Dirección del mensaje del resultado
+    mov edx, result_len ; Longitud del mensaje del resultado
+    mov ebx, 1          ; Descriptor de archivo 
+    mov eax, 4          ; Número de llamada del sistema 
+    int 0x80            ; Llamada al kernel
+
+    ; Mostrar el resultado de la resta (decenas y unidades)
+    mov ecx, res_tens   ; Dirección de las decenas
+    mov edx, 1          ; Longitud del carácter
+    mov ebx, 1          ; Descriptor de archivo 
+    mov eax, 4          ; Número de llamada del sistema 
+    int 0x80            ; Llamada al kernel
+
+    mov ecx, res_units  ; Dirección de las unidades
+    mov edx, 1          ; Longitud del carácter
+    mov ebx, 1          ; Descriptor de archivo 
+    mov eax, 4          ; Número de llamada del sistema 
+    int 0x80            ; Llamada al kernel
+
+    ; Terminar el programa
+    mov eax, 1          ; Número de llamada del sistema 
+    mov ebx, 0          ; Código de salida
+    int 0x80            ; Llamada al kernel
+
+; Subrutina para imprimir un número de dos dígitos
+print_number:
+    ; AX contiene el número a imprimir
+    push ax            ; Guardar AX en la pila
+    mov bx, 10
+    xor dx, dx         ; Limpiar DX antes de la división
+    div bx             ; Dividir AX por 10, cociente en AX, residuo en DX (unidades)
+    add ax, '0'        ; Convertir el cociente (decenas) a ASCII
+    add dx, '0'        ; Convertir el residuo (unidades) a ASCII
+    mov [num_tens], al ; Guardar las decenas
+    mov [num_units], dl ; Guardar las unidades
+
+    ; Mostrar las decenas
+    mov ecx, num_tens  ; Dirección de las decenas
+    mov edx, 1         ; Longitud del carácter
+    mov ebx, 1         ; Descriptor de archivo 
+    mov eax, 4         ; Número de llamada del sistema 
+    int 0x80           ; Llamada al kernel
+
+    ; Mostrar las unidades
+    mov ecx, num_units ; Dirección de las unidades
+    mov edx, 1         ; Longitud del carácter
+    mov ebx, 1         ; Descriptor de archivo 
+    mov eax, 4         ; Número de llamada del sistema 
+    int 0x80           ; Llamada al kernel
+
+    pop ax             ; Restaurar AX desde la pila
+    ret
+
+; Subrutina para imprimir un carácter
+print_char:
+    mov [char_to_print], al
+    mov ecx, char_to_print
+    mov edx, 1
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    ret
+
+; Subrutina para imprimir un salto de línea
+print_newline:
+    mov ecx, newline   ; Dirección del salto de línea
+    mov edx, 1         ; Longitud del carácter
+    mov ebx, 1         ; Descriptor de archivo 
+    mov eax, 4         ; Número de llamada del sistema 
+    int 0x80           ; Llamada al kernel
+    ret
+
+section .data
+title_msg db "Restando 3 numeros enteros:", 0xA ; Título del mensaje
+title_len equ $ - title_msg                     ; Longitud del título
+
+result_msg db 0xA, "El resultado es: ", 0xA     ; Mensaje del resultado
+result_len equ $ - result_msg                   ; Longitud del mensaje del resultado
+
+newline db 0xA                                  ; Salto de línea
+
+section .bss
+res_tens resb 1  ; Reservar 1 byte para las decenas del resultado
+res_units resb 1 ; Reservar 1 byte para las unidades del resultado
+num_tens resb 1  ; Reservar 1 byte para las decenas de un número
+num_units resb 1 ; Reservar 1 byte para las unidades de un número
+char_to_print resb 1 ; Reservar 1 byte para el carácter a imprimir

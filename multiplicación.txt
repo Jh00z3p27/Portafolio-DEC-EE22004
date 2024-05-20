@@ -1,0 +1,57 @@
+;Solucion Ejercicio 2: Multiplicación
+section .text
+global _start 
+
+_start: ;punto de entrada
+    ; Cálculo de la multiplicación
+    mov al, '9' ; Cargar el carácter ASCII '9' en el registro de 8 bits AL
+    sub al, '0' ; Convertir '9' a su valor numérico (9)
+    mov bl, '9' ; Cargar el carácter ASCII '9' en el registro de 8 bits BL
+    sub bl, '0' ; Convertir '9' a su valor numérico (9)
+    mul bl      ; Multiplicar AL por BL, resultado en AX (parte baja AL, parte alta AH)
+    
+    ; AX ahora contiene el resultado de la multiplicación (hasta 81 en decimal)
+    ; Descomponer el resultado en dígitos
+    mov bl, 10
+    div bl      ; Dividir AX por 10, cociente en AL (decenas), residuo en AH (unidades)
+    
+    ; Convertir los números a ASCII
+    add al, '0' ; Convertir el cociente (decenas) a ASCII
+    add ah, '0' ; Convertir el residuo (unidades) a ASCII
+
+    ; Guardar los resultados en variables
+    mov [res_tens], al ; Guardar las decenas
+    mov [res_units], ah ; Guardar las unidades
+
+    ; Mostrar mensaje en pantalla
+    mov ecx, msg ; Dirección del mensaje
+    mov edx, len ; Longitud del mensaje
+    mov ebx, 1   ; Descriptor de archivo (1 para stdout)
+    mov eax, 4   ; Número de llamada del sistema (sys_write)
+    int 0x80     ; Llamada al kernel
+
+    ; Mostrar el resultado de la multiplicación (decenas y unidades)
+    mov ecx, res_tens ; Dirección de las decenas
+    mov edx, 1        ; Longitud del carácter
+    mov ebx, 1        ; Descriptor de archivo (1 para stdout)
+    mov eax, 4        ; Número de llamada del sistema (sys_write)
+    int 0x80          ; Llamada al kernel
+
+    mov ecx, res_units ; Dirección de las unidades
+    mov edx, 1         ; Longitud del carácter
+    mov ebx, 1         ; Descriptor de archivo (1 para stdout)
+    mov eax, 4         ; Número de llamada del sistema (sys_write)
+    int 0x80           ; Llamada al kernel
+
+    ; Terminar el programa
+    mov eax, 1         ; Número de llamada del sistema (sys_exit)
+    mov ebx, 0         ; Código de salida
+    int 0x80           ; Llamada al kernel
+
+section .data
+msg db "The result is: ", 0xA ; Mensaje a mostrar
+len equ $ - msg               ; Longitud del mensaje
+
+segment .bss
+res_tens resb 1 ; Reservar 1 byte para las decenas
+res_units resb 1 ; Reservar 1 byte para las unidades
